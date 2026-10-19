@@ -1,24 +1,31 @@
 name: CUERPOSFERA Instagram
+
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run o publish"
+        description: "Comprobar, previsualizar o publicar"
         required: true
-        default: dry-run
+        default: check-instagram
         type: choice
-        options: [dry-run, publish]
+        options:
+          - check-instagram
+          - dry-run
+          - publish
+
 permissions:
   contents: write
+
 concurrency:
-  group: cuerposfera-ig
+  group: cuerposfera-instagram
   cancel-in-progress: false
+
 jobs:
-  video:
+  cuerposfera:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     env:
-      PYTHONUNBUFFERED: '1'
+      PYTHONUNBUFFERED: "1"
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
       IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
@@ -33,36 +40,116 @@ jobs:
       OPENROUTER_MODEL: openrouter/free
       STATE_BRANCH: cuerposfera-state
       OUTPUT_DIR: output
-      ENABLE_PHOTOS: 'true'
-      ENABLE_MUSIC: 'true'
-      REQUIRE_VOICE: 'true'
-      PUBLISH_FEED: 'true'
-      PUBLISH_STORY: 'true'
+      ENABLE_PHOTOS: "true"
+      ENABLE_MUSIC: "true"
+      REQUIRE_VOICE: "true"
+      PUBLISH_FEED: "true"
+      PUBLISH_STORY: "true"
       REEL_MUSIC_URL: https://commons.wikimedia.org/wiki/Special:Redirect/file/Promise.ogg
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
           cache: pip
-      - name: Install FFmpeg
+
+      - name: Instalar FFmpeg y fuentes
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg fonts-dejavu-core
-      - name: Install Python requirements
-        run: pip install -r requirements.txt
-      - name: Verify
-        run: python monitor.py --check
-      - name: Generate or publish
+
+      - name: Instalar requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Comprobar proyecto
+        run: |
+          test -f monitor.py || { echo "ERROR: falta monitor.py en la raiz del repositorio"; exit 1; }
+          python -m py_compile monitor.py
+          python monitor.py --check
+
+      - name: Diagnosticar identidad Instagram
+        if: ${{ inputs.mode == 'check-instagram' || inputs.mode == 'publish' }}
         shell: bash
         run: |
-          if [[ "${{ inputs.mode }}" == "publish" ]]; then
+          python - <<'PY'
+          import os
+          import sys
+          import requests
+
+          token = (os.getenv('IG_ACCESS_TOKEN') or os.getenv('INSTAGRAM_TOKEN') or '').strip()
+          uid = (os.getenv('IG_USER_ID') or os.getenv('INSTAGRAM_USER_ID') or '').strip()
+          expected = os.getenv('IG_EXPECTED_USERNAME', '').strip().lstrip('@').lower()
+          version = os.getenv('IG_GRAPH_VERSION', 'v25.0')
+          if not token or not uid or not expected:
+              sys.exit('ERROR: faltan credenciales de Instagram o IG_EXPECTED_USERNAME')
+          if not uid.isdigit():
+              sys.exit('ERROR: INSTAGRAM_USER_ID/IG_USER_ID debe ser numérico')
+
+          base = f'https://graph.instagram.com/{version}'
+          headers = {'Authorization': f'Bearer {token}'}
+
+          def consulta(path, fields):
+              try:
+                  response = requests.get(
+                      base + path,
+                      headers=headers,
+                      params={'fields': fields},
+                      timeout=30,
+                  )
+                  data = response.json()
+              except (requests.RequestException, ValueError) as exc:
+                  sys.exit('ERROR: No se pudo consultar Instagram: ' + type(exc).__name__)
+              if not response.ok or data.get('error'):
+                  err = data.get('error') or {}
+                  print('ERROR Meta:', response.status_code, 'codigo:', err.get('code'),
+                        'subcodigo:', err.get('error_subcode'))
+                  sys.exit(1)
+              return data
+
+          me = consulta('/me', 'id,username')
+          authorized = str(me.get('username') or '').strip().lstrip('@').lower()
+          authorized_id = str(me.get('id') or '')
+          masked = lambda value: ('...' + value[-4:]) if value else '(vacio)'
+
+          print('CUENTA AUTORIZADA: @' + (authorized or '(no recibida)'))
+          print('CUENTA ESPERADA: @' + expected)
+          print('ID TOKEN (ultimos 4):', masked(authorized_id))
+          print('ID SECRET (ultimos 4):', masked(uid))
+
+          # Verifica exactamente el mismo endpoint utilizado por monitor.py.
+          configured = consulta('/' + uid, 'id,username')
+          account = str(configured.get('username') or '').strip().lstrip('@').lower()
+          id_ok = str(configured.get('id') or '') == uid
+          print('CUENTA DEL ID CONFIGURADO: @' + (account or '(no recibida)'))
+          print('USUARIO COINCIDE:', authorized == expected and account == expected)
+          print('ID COINCIDE:', id_ok and authorized_id == uid)
+
+          if authorized != expected or account != expected or not id_ok or authorized_id != uid:
+              sys.exit('ERROR: Credenciales no corresponden a @' + expected +
+                       '. Corrige el nombre configurado o renueva token e ID para la cuenta correcta.')
+          print('IDENTIDAD DE INSTAGRAM VERIFICADA. Se puede continuar.')
+          PY
+
+      - name: Generar vista previa o publicar
+        if: ${{ inputs.mode == 'dry-run' || inputs.mode == 'publish' }}
+        shell: bash
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          if [[ "$MODE" == "publish" ]]; then
             python monitor.py --publish
           else
             python monitor.py --dry-run
           fi
-      - name: Upload previews
-        if: always()
+
+      - name: Guardar archivos de salida
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: cuerposfera-${{ github.run_id }}
