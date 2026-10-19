@@ -536,29 +536,40 @@ class Instagram:
         if not isinstance(b,dict):raise RuntimeError(('RESULTADO INCIERTO: ' if uncertain else '')+'Meta JSON inválido')
         return b
     def identity(self):
-        """Comprueba identidad por usuario en /me y por ID publicador.
+        """Comprueba que el token y el ID configurado identifican el usuario esperado.
 
-        Meta puede devolver identificadores distintos para la misma cuenta.
-        El ID configurado debe ser consultable y ser el mismo que devuelve
-        GET /{uid}, pero no se exige que sea idéntico a GET /me.id.
-        No se realiza ninguna publicación en esta comprobación.
+        Instagram Login puede exponer IDs distintos en /me y /{uid}; tampoco
+        exigimos que /{uid}.id sea igual al path solicitado. El ID publicador
+        DEBE resolver por API al nombre esperado bajo el mismo token.
+        Esta consulta no prueba permisos de publicación ni crea publicaciones.
         """
         expected=self.c.username.strip().lstrip('@').casefold()
-        me=self.req('GET','/me',params={'fields':'id,username'})
+        if not expected:
+            raise RuntimeError('Falta IG_EXPECTED_USERNAME')
+        try:
+            me=self.req('GET','/me',params={'fields':'id,user_id,username'})
+        except RuntimeError as exc:
+            # Algunas versiones/cuentas no exponen user_id en /me.
+            if 'user_id' not in str(exc).lower():
+                raise
+            me=self.req('GET','/me',params={'fields':'id,username'})
         account=self.req('GET','/'+self.c.uid,params={'fields':'id,username'})
         authorized=str(me.get('username') or '').strip().lstrip('@').casefold()
         resolved=str(account.get('username') or '').strip().lstrip('@').casefold()
-        resolved_id=str(account.get('id') or '').strip()
+        returned_id=str(account.get('id') or '').strip()
+        known_ids={str(me.get(k) or '').strip() for k in ('id','user_id')}
         print('CUENTA AUTORIZADA: @'+(authorized or '(no recibida)'),flush=True)
         print('CUENTA ESPERADA: @'+expected,flush=True)
         print('CUENTA DEL ID CONFIGURADO: @'+(resolved or '(no recibida)'),flush=True)
-        print('ID SECRET CONSULTABLE:',resolved_id==self.c.uid,flush=True)
-        if not expected or authorized!=expected or resolved!=expected or resolved_id!=self.c.uid:
-            raise RuntimeError('Cuenta Instagram no coincide con @'+expected+
-                               ' o el ID configurado no se puede validar')
-        if str(me.get('id') or '')!=self.c.uid:
-            print('NOTA: /me.id y el ID de publicación son distintos; '
-                  'ambos resuelven al usuario esperado.',flush=True)
+        print('ID CONFIGURADO RESUELVE PERFIL:',bool(returned_id and resolved),flush=True)
+        print('ID COINCIDE CON ALGÚN CAMPO DE /me:',self.c.uid in known_ids,flush=True)
+        if authorized!=expected or resolved!=expected or not returned_id:
+            raise RuntimeError('Identidad Instagram no validada: token o ID configurado apunta a otra cuenta')
+        if self.c.uid!=returned_id:
+            print('NOTA: /{ID}.id difiere del ID configurado; ambos identifican @'+expected,flush=True)
+        if self.c.uid not in known_ids:
+            print('NOTA: /me expone otros identificadores; el ID configurado responde para @'+expected,flush=True)
+        print('IDENTIDAD DE INSTAGRAM VERIFICADA (sin probar permisos de publicación)',flush=True)
         return account
     def create(self,url,caption_text,kind):
         params={'caption':caption_text}
