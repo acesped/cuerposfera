@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """CUERPÓSFERA: Reels de divulgación basados en datos revisados.
 
