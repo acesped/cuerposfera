@@ -73,7 +73,7 @@ jobs:
           python -m py_compile monitor.py
           python monitor.py --check
 
-      - name: Diagnosticar identidad Instagram
+      - name: Comprobar que token e ID apuntan a CUERPÓSFERA
         if: ${{ inputs.mode == 'check-instagram' || inputs.mode == 'publish' }}
         run: python monitor.py --check-instagram
 
