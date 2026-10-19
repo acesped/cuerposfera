@@ -113,7 +113,28 @@
         "media_id": "17994428514043355",
         "error": ""
       }
+    },
+    "azucar_bebidas-0ff42e17abb49fef12": {
+      "topic_id": "azucar_bebidas",
+      "topic": {
+        "id": "azucar_bebidas",
+        "title": "¿Lees el azúcar de tu bebida?",
+        "number": "4 kcal",
+        "unit": "por cada gramo de azúcar",
+        "hook": "¿Sabes cuánto azúcar escondes?",
+        "fact": "Cada gramo de azúcares aporta aproximadamente 4 kilocalorías.",
+        "comparison": "Una bebida que indique 35 g de azúcar aporta cerca de 140 kcal solo de esos azúcares.",
+        "nuance": "35 g es un ejemplo de etiqueta, no una cifra universal para todas las bebidas.",
+        "action": "Lee los gramos de azúcar por envase, no solo por porción.",
+        "source": "USDA — FoodData Central",
+        "source_url": "https://fdc.nal.usda.gov/",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Bebidas #Azucar #Datos",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "¿Sabes cuánto azúcar escondes?",
+      "created": "2026-10-19T03:00:58.273166+00:00"
     }
   },
-  "updated": "2026-10-19T01:31:11.852062+00:00"
+  "updated": "2026-10-19T03:00:58.273189+00:00"
 }
