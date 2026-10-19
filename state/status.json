@@ -183,7 +183,28 @@
         "media_id": "18116319461157722",
         "error": ""
       }
+    },
+    "carbohidratos-408e9dfea3f8fadee9": {
+      "topic_id": "carbohidratos",
+      "topic": {
+        "id": "carbohidratos",
+        "title": "¿Todos los carbohidratos son iguales?",
+        "number": "45–75 %",
+        "unit": "de energía como rango general",
+        "hook": "Descubre por qué los carbohidratos no son todos iguales.",
+        "fact": "La OMS describe un rango general aproximado del 45 al 75 % de energía procedente de carbohidratos en muchas dietas.",
+        "comparison": "En 2.000 kcal, el 45 % representa 900 kcal.",
+        "nuance": "La cantidad puede variar mucho; prioriza cereales integrales, frutas, verduras y legumbres.",
+        "action": "Sustituye un cereal refinado por una opción integral.",
+        "source": "OMS — Healthy diet",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Carbohidratos #Alimentación",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "Descubre por qué los carbohidratos no son todos iguales.",
+      "created": "2026-10-19T11:00:55.139517+00:00"
     }
   },
-  "updated": "2026-10-19T07:02:41.438591+00:00"
+  "updated": "2026-10-19T11:00:55.139538+00:00"
 }
