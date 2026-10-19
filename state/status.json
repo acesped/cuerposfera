@@ -203,8 +203,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "Descubre por qué los carbohidratos no son todos iguales.",
-      "created": "2026-10-19T11:00:55.139517+00:00"
+      "created": "2026-10-19T11:00:55.139517+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895510738438262",
+        "updated": "2026-10-19T11:01:38.268093+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T11:01:34.116504+00:00"
+  "updated": "2026-10-19T11:01:38.268109+00:00"
 }
