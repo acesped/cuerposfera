@@ -273,8 +273,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "Descubre el secreto de la grasa que no debes temer.",
-      "created": "2026-10-19T19:01:03.575606+00:00"
+      "created": "2026-10-19T19:01:03.575606+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895614064438262",
+        "updated": "2026-10-19T19:01:32.582085+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T19:01:27.637184+00:00"
+  "updated": "2026-10-19T19:01:32.582104+00:00"
 }
