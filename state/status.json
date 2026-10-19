@@ -23,11 +23,13 @@
       "hook": "Descubre cómo el movimiento abre puertas invisibles.",
       "created": "2026-10-19T01:08:21.863933+00:00",
       "reel": {
-        "status": "publishing",
+        "status": "published",
         "container_id": "17895406527438262",
-        "updated": "2026-10-19T01:09:01.050781+00:00"
+        "updated": "2026-10-19T01:09:06.563821+00:00",
+        "media_id": "18447395188122424",
+        "error": ""
       }
     }
   },
-  "updated": "2026-10-19T01:09:01.050792+00:00"
+  "updated": "2026-10-19T01:09:06.563835+00:00"
 }
