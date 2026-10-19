@@ -218,7 +218,28 @@
         "media_id": "18172495837474726",
         "error": ""
       }
+    },
+    "fibra-3176393c18d859956f": {
+      "topic_id": "fibra",
+      "topic": {
+        "id": "fibra",
+        "title": "¿Cuánta fibra comes realmente?",
+        "number": "25 g",
+        "unit": "diarios a partir de 10 años",
+        "hook": "¿Sabes cuánta fibra realmente ingieres?",
+        "fact": "La OMS aconseja al menos 25 g diarios de fibra alimentaria natural en mayores de 10 años.",
+        "comparison": "Cinco alimentos con 5 g de fibra cada uno sumarían 25 g.",
+        "nuance": "Es una meta poblacional; las necesidades y tolerancia individuales varían.",
+        "action": "Incluye legumbres y cereales integrales, incrementando la fibra gradualmente.",
+        "source": "OMS — Healthy diet",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Fibra #Digestión",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "¿Sabes cuánta fibra realmente ingieres?",
+      "created": "2026-10-19T15:01:02.867017+00:00"
     }
   },
-  "updated": "2026-10-19T11:03:27.942816+00:00"
+  "updated": "2026-10-19T15:01:02.867041+00:00"
 }
