@@ -60,7 +60,7 @@ jobs:
       - name: Instalar FFmpeg y fuentes
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg fonts-dejavu-core
+          sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
 
       - name: Instalar requirements
         run: |
@@ -75,66 +75,7 @@ jobs:
 
       - name: Diagnosticar identidad Instagram
         if: ${{ inputs.mode == 'check-instagram' || inputs.mode == 'publish' }}
-        shell: bash
-        run: |
-          python - <<'PY'
-          import os
-          import sys
-          import requests
-
-          token = (os.getenv('IG_ACCESS_TOKEN') or os.getenv('INSTAGRAM_TOKEN') or '').strip()
-          uid = (os.getenv('IG_USER_ID') or os.getenv('INSTAGRAM_USER_ID') or '').strip()
-          expected = os.getenv('IG_EXPECTED_USERNAME', '').strip().lstrip('@').lower()
-          version = os.getenv('IG_GRAPH_VERSION', 'v25.0')
-          if not token or not uid or not expected:
-              sys.exit('ERROR: faltan credenciales de Instagram o IG_EXPECTED_USERNAME')
-          if not uid.isdigit():
-              sys.exit('ERROR: INSTAGRAM_USER_ID/IG_USER_ID debe ser numérico')
-
-          base = f'https://graph.instagram.com/{version}'
-          headers = {'Authorization': f'Bearer {token}'}
-
-          def consulta(path, fields):
-              try:
-                  response = requests.get(
-                      base + path,
-                      headers=headers,
-                      params={'fields': fields},
-                      timeout=30,
-                  )
-                  data = response.json()
-              except (requests.RequestException, ValueError) as exc:
-                  sys.exit('ERROR: No se pudo consultar Instagram: ' + type(exc).__name__)
-              if not response.ok or data.get('error'):
-                  err = data.get('error') or {}
-                  print('ERROR Meta:', response.status_code, 'codigo:', err.get('code'),
-                        'subcodigo:', err.get('error_subcode'))
-                  sys.exit(1)
-              return data
-
-          me = consulta('/me', 'id,username')
-          authorized = str(me.get('username') or '').strip().lstrip('@').lower()
-          authorized_id = str(me.get('id') or '')
-          masked = lambda value: ('...' + value[-4:]) if value else '(vacio)'
-
-          print('CUENTA AUTORIZADA: @' + (authorized or '(no recibida)'))
-          print('CUENTA ESPERADA: @' + expected)
-          print('ID TOKEN (ultimos 4):', masked(authorized_id))
-          print('ID SECRET (ultimos 4):', masked(uid))
-
-          # Verifica exactamente el mismo endpoint utilizado por monitor.py.
-          configured = consulta('/' + uid, 'id,username')
-          account = str(configured.get('username') or '').strip().lstrip('@').lower()
-          id_ok = str(configured.get('id') or '') == uid
-          print('CUENTA DEL ID CONFIGURADO: @' + (account or '(no recibida)'))
-          print('USUARIO COINCIDE:', authorized == expected and account == expected)
-          print('ID COINCIDE:', id_ok and authorized_id == uid)
-
-          if authorized != expected or account != expected or not id_ok or authorized_id != uid:
-              sys.exit('ERROR: Credenciales no corresponden a @' + expected +
-                       '. Corrige el nombre configurado o renueva token e ID para la cuenta correcta.')
-          print('IDENTIDAD DE INSTAGRAM VERIFICADA. Se puede continuar.')
-          PY
+        run: python monitor.py --check-instagram
 
       - name: Generar vista previa o publicar
         if: ${{ inputs.mode == 'dry-run' || inputs.mode == 'publish' }}
