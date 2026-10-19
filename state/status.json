@@ -98,8 +98,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "Descubre el dulce secreto que tu cuerpo oculta.",
-      "created": "2026-10-19T01:29:32.400477+00:00"
+      "created": "2026-10-19T01:29:32.400477+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895409899438262",
+        "updated": "2026-10-19T01:29:51.781436+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T01:29:47.784829+00:00"
+  "updated": "2026-10-19T01:29:51.781454+00:00"
 }
