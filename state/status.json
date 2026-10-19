@@ -43,7 +43,28 @@
         "media_id": "18207576355365357",
         "error": ""
       }
+    },
+    "actividad_vigorosa-3d38d0ff9a59011ca8": {
+      "topic_id": "actividad_vigorosa",
+      "topic": {
+        "id": "actividad_vigorosa",
+        "title": "¿Cuánto ejercicio intenso?",
+        "number": "75 min",
+        "unit": "por semana como mínimo",
+        "hook": "¿Qué fuerza secreta impulsa tu cuerpo al límite?",
+        "fact": "La OMS recomienda como alternativa al ejercicio moderado al menos 75–150 minutos semanales de actividad aeróbica vigorosa para adultos.",
+        "comparison": "Tres sesiones de 25 minutos suman 75 minutos.",
+        "nuance": "La intensidad vigorosa no es apropiada para todas las personas; puede combinarse con actividad moderada.",
+        "action": "Elige una intensidad segura y progresa a tu ritmo.",
+        "source": "OMS — Physical activity",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Ejercicio #Movimiento",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "¿Qué fuerza secreta impulsa tu cuerpo al límite?",
+      "created": "2026-10-19T01:15:55.673507+00:00"
     }
   },
-  "updated": "2026-10-19T01:10:40.511610+00:00"
+  "updated": "2026-10-19T01:15:55.673527+00:00"
 }
