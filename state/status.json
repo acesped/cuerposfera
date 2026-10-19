@@ -168,8 +168,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "Descubre el reto que desafía al azúcar",
-      "created": "2026-10-19T07:00:52.108666+00:00"
+      "created": "2026-10-19T07:00:52.108666+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895468654438262",
+        "updated": "2026-10-19T07:01:32.238118+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T07:01:27.636559+00:00"
+  "updated": "2026-10-19T07:01:32.238136+00:00"
 }
