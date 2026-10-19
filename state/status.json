@@ -63,8 +63,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "¿Qué fuerza secreta impulsa tu cuerpo al límite?",
-      "created": "2026-10-19T01:15:55.673507+00:00"
+      "created": "2026-10-19T01:15:55.673507+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895407937438262",
+        "updated": "2026-10-19T01:16:12.870320+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T01:16:09.744306+00:00"
+  "updated": "2026-10-19T01:16:12.870337+00:00"
 }
