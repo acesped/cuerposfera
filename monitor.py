@@ -3,7 +3,7 @@
 
 Python 3.11+, Pillow, requests, ffmpeg/ffprobe, espeak-ng.
 Uso: python monitor.py --dry-run | --publish | --check | --list-topics
-Los posts se publican por separado: REEL, foto de feed y Story vertical.
+El Reel se comparte en el feed como VIDEO; la Story es otro video independiente.
 No emplea IA para inventar hechos: catálogo curado con fuente, cifra y matices.
 Cuenta profesional con Instagram Login; tokens en GitHub Actions Secrets.
 Repositorio PUBLICO para servir archivos a Meta desde rama de estado.
@@ -573,9 +573,8 @@ class Instagram:
         return account
     def create(self,url,caption_text,kind):
         params={'caption':caption_text}
-        if kind=='reel':params.update(media_type='REELS',video_url=url,share_to_feed='false')
+        if kind=='reel':params.update(media_type='REELS',video_url=url,share_to_feed='true')
         elif kind=='story':params={'media_type':'STORIES','video_url':url}
-        elif kind=='feed':params['image_url']=url
         else:raise ValueError('Tipo de publicación no admitido: '+str(kind))
         b=self.req('POST','/'+self.c.uid+'/media',data=params)
         cid=str(b.get('id',''))
@@ -781,7 +780,9 @@ def execute(args):
         if state['account'] is None:state['account']=c.uid;sha=gh.save(state,sha)
         # First resume any incomplete episode before creating new content.
         # An uncertain post is never resent, even across workflow executions.
-        kinds=['reel']+(['feed'] if c.public_feed else [])+(['story'] if c.public_story else [])
+        # La publicación de Reel con share_to_feed=true es también la del feed.
+        # No crear una segunda entrada de foto en el feed.
+        kinds=['reel']+(['story'] if c.public_story else [])
         active=[]
         for key,entry in state['episodes'].items():
             statuses=[entry.get(k,{}).get('status','pending') for k in kinds]
@@ -807,20 +808,36 @@ def execute(args):
         gh=ig=state=sha=None
     out=c.output/(episode if publish else topic['id']);video,photo,story=create_video(topic,out)
     write_json(out/'episode.json',{'topic':topic,'caption':caption(topic),'music_source':MUSIC_PAGE,'generated_at':now()})
-    log('Archivos listos:',video,photo)
+    log('Archivos listos: Reel/Feed MP4:',video,'Story MP4:',story,'Portada (no se publica):',photo)
     if not publish:
         log('SIMULACIÓN: no se ha publicado nada');return
     entry=state['episodes'][episode]
     sha=gh.save(state,sha)
     text=caption(topic)
     # Si una pieza está incierta, no bloquea la otra; tampoco se vuelve a enviar la incierta.
-    for kind,path in [('reel',video)]+([('feed',photo)] if c.public_feed else [])+([('story',story)] if c.public_story else []):
+    errors=[]
+    for kind,path in [('reel',video)]+([('story',story)] if c.public_story else []):
         item=entry.get(kind,{})
-        if item.get('status') in ('published','uncertain','publishing'):
-            log('Omitido',kind,':',item.get('status'));continue
-        url=gh.media(episode,path)
-        sha=publish_piece(gh,ig,state,sha,episode,kind,url,text)
-    log('Ciclo terminado',episode)
+        status=item.get('status','pending')
+        if status=='published':
+            log('Ya publicado',kind,'— no reenviar')
+            continue
+        if status in ('uncertain','publishing'):
+            reason=f'{kind}: estado {status}, requiere conciliación manual con Meta antes de reintentar'
+            log('BLOQUEADO:',reason)
+            errors.append(reason)
+            continue
+        try:
+            url=gh.media(episode,path)
+            sha=publish_piece(gh,ig,state,sha,episode,kind,url,text)
+        except Exception as exc:
+            reason=f'{kind}: {redact(exc)}'
+            errors.append(reason)
+            log('ERROR DE PUBLICACIÓN:',reason)
+            # Intentar Story aunque falle Reel, sin reenviar piezas inciertas.
+    if errors:
+        raise RuntimeError('Publicación parcial o fallida. '+ ' | '.join(errors))
+    log('Ciclo terminado: Reel en feed y Story de vídeo',episode)
 
 
 def main():
