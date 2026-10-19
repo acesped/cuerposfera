@@ -100,11 +100,13 @@
       "hook": "Descubre el dulce secreto que tu cuerpo oculta.",
       "created": "2026-10-19T01:29:32.400477+00:00",
       "reel": {
-        "status": "publishing",
+        "status": "published",
         "container_id": "17895409899438262",
-        "updated": "2026-10-19T01:30:18.256376+00:00"
+        "updated": "2026-10-19T01:30:26.974859+00:00",
+        "media_id": "18136935679648769",
+        "error": ""
       }
     }
   },
-  "updated": "2026-10-19T01:30:18.256428+00:00"
+  "updated": "2026-10-19T01:30:26.974877+00:00"
 }
