@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run para probar, publish para enviar a Instagram"
+        description: "dry-run o publish"
         required: true
         default: dry-run
         type: choice
@@ -11,15 +11,15 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: cuerposfera-publisher
+  group: cuerposfera-ig
   cancel-in-progress: false
 jobs:
-  publish:
+  video:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     env:
       PYTHONUNBUFFERED: '1'
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
       IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
       INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
@@ -27,11 +27,15 @@ jobs:
       INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
       IG_EXPECTED_USERNAME: cuerposfera
       IG_GRAPH_VERSION: v25.0
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      OPENAI_MODEL: gpt-4.1-mini
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_MODEL: openrouter/free
       STATE_BRANCH: cuerposfera-state
       OUTPUT_DIR: output
+      ENABLE_PHOTOS: 'true'
       ENABLE_MUSIC: 'true'
+      REQUIRE_VOICE: 'true'
       PUBLISH_FEED: 'true'
       PUBLISH_STORY: 'true'
       REEL_MUSIC_URL: https://commons.wikimedia.org/wiki/Special:Redirect/file/Promise.ogg
@@ -41,15 +45,15 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
-      - name: Install multimedia tools
+      - name: Install FFmpeg
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
-      - name: Install Python dependencies
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Install Python requirements
         run: pip install -r requirements.txt
-      - name: Check prerequisites
+      - name: Verify
         run: python monitor.py --check
-      - name: Run CUERPOSFERA
+      - name: Generate or publish
         shell: bash
         run: |
           if [[ "${{ inputs.mode }}" == "publish" ]]; then
@@ -57,11 +61,11 @@ jobs:
           else
             python monitor.py --dry-run
           fi
-      - name: Upload preview and logs
+      - name: Upload previews
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cuerposfera-output-${{ github.run_id }}
+          name: cuerposfera-${{ github.run_id }}
           path: output/
           if-no-files-found: ignore
           retention-days: 7
