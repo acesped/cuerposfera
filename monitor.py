@@ -536,9 +536,30 @@ class Instagram:
         if not isinstance(b,dict):raise RuntimeError(('RESULTADO INCIERTO: ' if uncertain else '')+'Meta JSON inválido')
         return b
     def identity(self):
-        b=self.req('GET','/'+self.c.uid,params={'fields':'id,username'})
-        if str(b.get('id'))!=self.c.uid or b.get('username','').lower()!=self.c.username:
-            raise RuntimeError('Cuenta Instagram no coincide con @'+self.c.username)
+        """Comprueba identidad por usuario en /me y por ID publicador.
+
+        Meta puede devolver identificadores distintos para la misma cuenta.
+        El ID configurado debe ser consultable y ser el mismo que devuelve
+        GET /{uid}, pero no se exige que sea idéntico a GET /me.id.
+        No se realiza ninguna publicación en esta comprobación.
+        """
+        expected=self.c.username.strip().lstrip('@').casefold()
+        me=self.req('GET','/me',params={'fields':'id,username'})
+        account=self.req('GET','/'+self.c.uid,params={'fields':'id,username'})
+        authorized=str(me.get('username') or '').strip().lstrip('@').casefold()
+        resolved=str(account.get('username') or '').strip().lstrip('@').casefold()
+        resolved_id=str(account.get('id') or '').strip()
+        print('CUENTA AUTORIZADA: @'+(authorized or '(no recibida)'),flush=True)
+        print('CUENTA ESPERADA: @'+expected,flush=True)
+        print('CUENTA DEL ID CONFIGURADO: @'+(resolved or '(no recibida)'),flush=True)
+        print('ID SECRET CONSULTABLE:',resolved_id==self.c.uid,flush=True)
+        if not expected or authorized!=expected or resolved!=expected or resolved_id!=self.c.uid:
+            raise RuntimeError('Cuenta Instagram no coincide con @'+expected+
+                               ' o el ID configurado no se puede validar')
+        if str(me.get('id') or '')!=self.c.uid:
+            print('NOTA: /me.id y el ID de publicación son distintos; '
+                  'ambos resuelven al usuario esperado.',flush=True)
+        return account
     def create(self,url,caption_text,kind):
         params={'caption':caption_text}
         if kind=='reel':params.update(media_type='REELS',video_url=url,share_to_feed='false')
