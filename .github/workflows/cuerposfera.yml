@@ -7,11 +7,10 @@ on:
         required: true
         default: dry-run
         type: choice
-        options:
-          - dry-run
-          - publish
+        options: [dry-run, publish]
   schedule:
-    # Lunes, miércoles y viernes 15:00 UTC (horario UTC, no Chile)
+    # ÚNICO cron: GitHub Actions controla cuándo ejecutar.
+    # Cambia esta expresión o elimina schedule si utilizas cron-job.org para disparar workflow_dispatch.
     - cron: '0 15 * * 1,3,5'
 permissions:
   contents: write
@@ -36,6 +35,7 @@ jobs:
       OUTPUT_DIR: output
       ENABLE_MUSIC: 'true'
       PUBLISH_FEED: 'true'
+      PUBLISH_STORY: 'true'
       REEL_MUSIC_URL: https://commons.wikimedia.org/wiki/Special:Redirect/file/Promise.ogg
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +52,7 @@ jobs:
       - name: Check prerequisites
         run: python monitor.py --check
       - name: Run CUERPOSFERA
+        shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.mode }}" == "publish" ]]; then
             python monitor.py --publish
@@ -66,4 +67,3 @@ jobs:
           path: output/
           if-no-files-found: ignore
           retention-days: 7
-
