@@ -3,7 +3,7 @@
 
 Python 3.11+, Pillow, requests, ffmpeg/ffprobe, espeak-ng.
 Uso: python monitor.py --dry-run | --publish | --check | --list-topics
-Los posts se publican por separado: REEL y fotografía JPEG de feed.
+Los posts se publican por separado: REEL, foto de feed y Story vertical.
 No emplea IA para inventar hechos: catálogo curado con fuente, cifra y matices.
 Cuenta profesional con Instagram Login; tokens en GitHub Actions Secrets.
 Repositorio PUBLICO para servir archivos a Meta desde rama de estado.
@@ -90,6 +90,34 @@ TOPICS = [
          date_reviewed='2026-10-18', tags='#Bebidas #Azucar #Datos'),
 ]
 
+
+# Fichas adicionales: datos cuantitativos con fuente institucional, sin alarmismo.
+def extra_topic(id,title,number,unit,hook,fact,comparison,nuance,action,source,url,tags):
+    return dict(id=id,title=title,number=number,unit=unit,hook=hook,fact=fact,
+                comparison=comparison,nuance=nuance,action=action,source=source,
+                source_url=url,date_reviewed='2026-10-18',tags=tags)
+
+WHO='https://www.who.int/news-room/fact-sheets/detail/healthy-diet'
+MOVE='https://www.who.int/news-room/fact-sheets/detail/physical-activity'
+SLEEP='https://www.cdc.gov/sleep/about/index.html'
+TOPICS += [
+    extra_topic('vegetales','¿Cuántas verduras y frutas comes?','400 g','al día, mayores de 10 años','400 GRAMOS PUEDEN CAMBIAR TU PLATO','La OMS recomienda al menos 400 g diarios de frutas y verduras para mayores de 10 años.','Un ejemplo: cuatro porciones de 100 g suman 400 g.','Excluye raíces feculentas de esta recomendación y hay metas diferentes en niños pequeños.','Añade una verdura al almuerzo y una fruta como colación.','OMS — Healthy diet',WHO,'#Frutas #Verduras'),
+    extra_topic('fibra','¿Cuánta fibra comes realmente?','25 g','diarios a partir de 10 años','LA FIBRA NO ES INVISIBLE','La OMS aconseja al menos 25 g diarios de fibra alimentaria natural en mayores de 10 años.','Cinco alimentos con 5 g de fibra cada uno sumarían 25 g.','Es una meta poblacional; las necesidades y tolerancia individuales varían.','Incluye legumbres y cereales integrales, incrementando la fibra gradualmente.','OMS — Healthy diet',WHO,'#Fibra #Digestión'),
+    extra_topic('grasas_saturadas','¿Cuánta grasa saturada?','10 %','máximo de energía','EL TIPO DE GRASA IMPORTA','La OMS recomienda que las grasas saturadas no superen el 10 % de las calorías totales.','A 2.000 kcal, el 10 % equivale a unas 22 g de grasa saturada.','La cifra no significa eliminar toda la grasa; importa el tipo y el conjunto de la dieta.','Sustituye parte de la mantequilla por aceite vegetal insaturado.','OMS — Healthy diet',WHO,'#Grasas #Corazón'),
+    extra_topic('grasas_trans','¿Y las grasas trans?','1 %','máximo de energía','LA ETIQUETA TAMBIÉN HABLA','La OMS recomienda mantener las grasas trans por debajo del 1 % de la energía total.','En 2.000 kcal, equivale a menos de unos 2,2 g de grasas trans al día.','Las grasas trans industriales deben evitarse; no todas las grasas tienen el mismo efecto.','Busca y reduce productos con aceites parcialmente hidrogenados.','OMS — Healthy diet',WHO,'#GrasasTrans #Etiquetas'),
+    extra_topic('grasas_totales','¿Cuánta grasa hay en tu día?','30 %','referencia energética','NO TODAS LAS CALORÍAS SON IGUALES','La OMS señala que limitar la grasa total al 30 % o menos de la energía puede ayudar a evitar peso excesivo en adultos.','En un ejemplo de 2.000 kcal, son unas 67 g de grasa.','La calidad de las grasas importa y las necesidades individuales pueden diferir.','Da prioridad a alimentos con grasas insaturadas.','OMS — Healthy diet',WHO,'#Grasas #Nutrición'),
+    extra_topic('azucar_optima','El objetivo más exigente para el azúcar','5 %','de energía diaria','¿Y SI BAJAS UN POCO MÁS?','La OMS sugiere reducir los azúcares libres al 5 % o menos de la energía para beneficios adicionales.','En una dieta de 2.000 kcal, equivale a unos 25 g de azúcares libres al día.','Se refiere a azúcares libres, no al azúcar presente naturalmente en fruta entera.','Prueba bebidas sin azúcar añadido y lee etiquetas.','OMS — Healthy diet',WHO,'#Azucar #Etiquetas'),
+    extra_topic('sodio','La diferencia entre sodio y sal','2 g','de sodio como referencia','DOS GRAMOS QUE IMPORTAN','La recomendación de menos de 5 g de sal equivale a menos de aproximadamente 2 g de sodio al día.','1 g de sal contiene aproximadamente 400 mg de sodio.','Sodio y sal no son sinónimos; hay que mirar la unidad que muestra la etiqueta.','Compara el sodio entre dos versiones del mismo producto.','OMS — Sodium reduction','https://www.who.int/news-room/fact-sheets/detail/sodium-reduction','#Sodio #Sal'),
+    extra_topic('actividad_vigorosa','¿Cuánto ejercicio intenso?','75 min','por semana como mínimo','75 MINUTOS PUEDEN SUMAR','La OMS recomienda como alternativa al ejercicio moderado al menos 75–150 minutos semanales de actividad aeróbica vigorosa para adultos.','Tres sesiones de 25 minutos suman 75 minutos.','La intensidad vigorosa no es apropiada para todas las personas; puede combinarse con actividad moderada.','Elige una intensidad segura y progresa a tu ritmo.','OMS — Physical activity',MOVE,'#Ejercicio #Movimiento'),
+    extra_topic('actividad_extra','Más movimiento, más oportunidades','300 min','de actividad moderada','¿Y SI TU SEMANA SE MUEVE MÁS?','La OMS indica un rango de 150 a 300 minutos semanales de actividad aeróbica moderada para adultos.','60 minutos durante cinco días suman 300 minutos.','No es una obligación diaria; pequeñas cantidades también aportan beneficios.','Si ya caminas 30 minutos, prueba añadir 10 cuando puedas.','OMS — Physical activity',MOVE,'#Movimiento #Bienestar'),
+    extra_topic('musculos','¿Entrenas tus músculos?','2 días','por semana','TU FUERZA TAMBIÉN CUENTA','La OMS recomienda a los adultos hacer actividades de fortalecimiento muscular al menos dos días a la semana.','Martes y viernes pueden ser tus dos jornadas de fuerza.','Adapta los ejercicios a tu capacidad y condiciones.','Haz una rutina breve de fuerza con técnica adecuada.','OMS — Physical activity',MOVE,'#Fuerza #ActividadFisica'),
+    extra_topic('sueno_adolescente','Los adolescentes también necesitan dormir','8–10 h','por noche','DORMIR TAMBIÉN ES CRECER','Los CDC recomiendan de 8 a 10 horas diarias de sueño entre los 13 y 17 años.','Dormir 7 horas está una hora por debajo del límite inferior.','No aplica a adultos ni a niños más pequeños; la calidad del sueño también importa.','Reduce pantallas antes de acostarte y protege una rutina estable.','CDC — About Sleep',SLEEP,'#Sueño #Adolescencia'),
+    extra_topic('sueno_escolar','El descanso en edad escolar','9–12 h','por noche','SU DÍA EMPIEZA LA NOCHE ANTERIOR','Los CDC recomiendan entre 9 y 12 horas de sueño a niños de 6 a 12 años.','Ocho horas quedan una hora por debajo del mínimo.','Las necesidades dependen de la edad y no se extrapolan a adultos.','Ayuda a mantener horarios de descanso regulares.','CDC — About Sleep',SLEEP,'#Niños #Sueño'),
+    extra_topic('sueno_mayores','Descanso después de los 65','7–8 h','por noche','LA EDAD CAMBIA TUS NECESIDADES','Los CDC señalan entre 7 y 8 horas de sueño para personas de 65 años o más.','Se trata de un intervalo orientativo de dos horas, de 7 a 8.','Las enfermedades y medicamentos pueden afectar el descanso y requieren valoración profesional.','Consulta si el insomnio o la somnolencia diurna persisten.','CDC — About Sleep',SLEEP,'#Sueño #Bienestar'),
+    extra_topic('carbohidratos','¿Todos los carbohidratos son iguales?','45–75 %','de energía como rango general','HAY MÁS QUE AZÚCAR','La OMS describe un rango general aproximado del 45 al 75 % de energía procedente de carbohidratos en muchas dietas.','En 2.000 kcal, el 45 % representa 900 kcal.','La cantidad puede variar mucho; prioriza cereales integrales, frutas, verduras y legumbres.','Sustituye un cereal refinado por una opción integral.','OMS — Healthy diet',WHO,'#Carbohidratos #Alimentación'),
+    extra_topic('sueno_dato','¿Cuántos adultos duermen poco?','30,5 %','de adultos de EE. UU. en 2024','CASI UNO DE CADA TRES','Una encuesta de los CDC estimó que el 30,5 % de adultos estadounidenses durmió menos de 7 horas en promedio en 2024.','Es aproximadamente 3 de cada 10 adultos encuestados.','Es una estimación de Estados Unidos, no una tasa mundial ni una predicción individual.','Revisa tu horario de sueño y busca consistencia.','CDC — NCHS Data Brief 559','https://www.cdc.gov/nchs/products/databriefs/db559.htm','#Sueño #Estadística'),
+]
+
 MUSIC_PAGE = 'https://commons.wikimedia.org/wiki/File:Promise.ogg'
 MUSIC_URL = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Promise.ogg'
 
@@ -126,6 +154,7 @@ class Config:
     output:Path
     audio:bool
     public_feed:bool
+    public_story:bool
 
     @classmethod
     def load(cls):
@@ -142,6 +171,7 @@ class Config:
             output=Path(os.getenv('OUTPUT_DIR','output')),
             audio=envbool('ENABLE_MUSIC',True),
             public_feed=envbool('PUBLISH_FEED',True),
+            public_story=envbool('PUBLISH_STORY',True),
         )
 
 
@@ -158,6 +188,7 @@ def check_topic(t):
 def cmd(args, timeout=90):
     p=subprocess.run(args,capture_output=True,text=True,timeout=timeout)
     if p.returncode:raise RuntimeError(f'{args[0]} falló: {redact(p.stderr[-350:])}')
+    return p.stdout
     return p.stdout
 
 
@@ -265,13 +296,13 @@ def create_video(t,folder):
         slide(a,b,t['unit'],idx,folder,number=t['number'] if idx==1 else None)
     cover=Image.open(folder/'slide_01.png').convert('RGB')
     cover.save(folder/'feed.jpg',quality=90,optimize=True)
-    # Escenas de 7 segundos = 35s, vertical 720x1280, 30 fps.
+    # Cinco escenas de 6 segundos = 30s, vertical 720x1280, 30 fps.
     listing=folder/'slides.txt'
-    listing.write_text(''.join(f"file '{(folder/f'slide_{i:02}.png').resolve()}'\nduration 7\n" for i in range(5))+
+    listing.write_text(''.join(f"file '{(folder/f'slide_{i:02}.png').resolve()}'\nduration 6\n" for i in range(5))+
                        f"file '{(folder/'slide_04.png').resolve()}'\n",encoding='utf-8')
     background=folder/'silent.mp4'
     cmd(['ffmpeg','-hide_banner','-loglevel','error','-y','-f','concat','-safe','0','-i',str(listing),
-         '-t','35','-vf','fps=30,format=yuv420p','-c:v','libx264','-preset','veryfast','-crf','24',
+         '-t','30','-vf','fps=30,format=yuv420p','-c:v','libx264','-preset','veryfast','-crf','24',
          '-movflags','+faststart',str(background)],180)
     voice=narration(' '.join(b for _,b in lines),folder)
     track=music(folder)
@@ -292,7 +323,7 @@ def create_video(t,folder):
         args+=['-f','lavfi','-i','anullsrc=r=48000:cl=stereo']
         filters.append('[1:a]anull[a]')
     args+=['-filter_complex',';'.join(filters),'-map','0:v:0','-map','[a]',
-           '-c:v','copy','-c:a','aac','-b:a','128k','-ar','48000','-ac','2','-t','35',
+           '-c:v','copy','-c:a','aac','-b:a','128k','-ar','48000','-ac','2','-t','30',
            '-movflags','+faststart',str(final)]
     cmd(args,150)
     info=json.loads(cmd(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(final)],20))
@@ -302,7 +333,11 @@ def create_video(t,folder):
         types['video'].get('width')!=720 or types['video'].get('height')!=1280):
         raise RuntimeError('Video incompatible con Instagram')
     if final.stat().st_size>45_000_000:raise RuntimeError('MP4 supera 45 MB')
-    return final,folder/'feed.jpg'
+    story=folder/'story.jpg'
+    # Story vertical estática independiente del feed y del Reel.
+    slide(t['hook'],t['action'],'CUERPÓSFERA',5,folder,number=t['number'])
+    Image.open(folder/'slide_05.png').convert('RGB').save(story,quality=90,optimize=True)
+    return final,folder/'feed.jpg',story
 
 
 def caption(t):
@@ -425,7 +460,9 @@ class Instagram:
     def create(self,url,caption_text,kind):
         params={'caption':caption_text}
         if kind=='reel':params.update(media_type='REELS',video_url=url,share_to_feed='false')
-        else:params['image_url']=url
+        elif kind=='story':params={'media_type':'STORIES','image_url':url}
+        elif kind=='feed':params['image_url']=url
+        else:raise ValueError('Tipo de publicación no admitido: '+str(kind))
         b=self.req('POST','/'+self.c.uid+'/media',data=params)
         cid=str(b.get('id',''))
         if not cid.isdigit():raise RuntimeError('Meta no devolvió container ID')
@@ -491,7 +528,7 @@ def execute(args):
         # Rotación: elegir la primera ficha que todavía no ha publicado ambos elementos.
         def unfinished(topic):
             item=state['episodes'].get(topic['id'],{})
-            kinds=['reel']+(['feed'] if c.public_feed else [])
+            kinds=['reel']+(['feed'] if c.public_feed else [])+(['story'] if c.public_story else [])
             statuses=[item.get(k,{}).get('status','pending') for k in kinds]
             # No volver a seleccionar episodios bloqueados solo por resultados inciertos.
             # Se conservan para reconciliación manual, mientras la cola continúa.
@@ -503,7 +540,7 @@ def execute(args):
     else:
         topic=next((t for t in TOPICS if t['id']==args.topic), TOPICS[0])
         gh=ig=state=sha=None
-    out=c.output/topic['id'];video,photo=create_video(topic,out)
+    out=c.output/topic['id'];video,photo,story=create_video(topic,out)
     write_json(out/'episode.json',{'topic':topic,'caption':caption(topic),'music_source':MUSIC_PAGE,'generated_at':now()})
     log('Archivos listos:',video,photo)
     if not publish:
@@ -513,7 +550,7 @@ def execute(args):
     sha=gh.save(state,sha)
     text=caption(topic)
     # Si una pieza está incierta, no bloquea la otra; tampoco se vuelve a enviar la incierta.
-    for kind,path in [('reel',video)]+([('feed',photo)] if c.public_feed else []):
+    for kind,path in [('reel',video)]+([('feed',photo)] if c.public_feed else [])+([('story',story)] if c.public_story else []):
         item=entry.get(kind,{})
         if item.get('status') in ('published','uncertain','publishing'):
             log('Omitido',kind,':',item.get('status'));continue
