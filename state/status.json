@@ -1,6 +1,28 @@
 {
   "schema": 1,
   "account": "17841473147837144",
-  "episodes": {},
-  "updated": "2026-10-19T01:08:15.743581+00:00"
+  "episodes": {
+    "actividad_extra-e062ec66b15876a1c7": {
+      "topic_id": "actividad_extra",
+      "topic": {
+        "id": "actividad_extra",
+        "title": "Más movimiento, más oportunidades",
+        "number": "300 min",
+        "unit": "de actividad moderada",
+        "hook": "Descubre cómo el movimiento abre puertas invisibles.",
+        "fact": "La OMS indica un rango de 150 a 300 minutos semanales de actividad aeróbica moderada para adultos.",
+        "comparison": "60 minutos durante cinco días suman 300 minutos.",
+        "nuance": "No es una obligación diaria; pequeñas cantidades también aportan beneficios.",
+        "action": "Si ya caminas 30 minutos, prueba añadir 10 cuando puedas.",
+        "source": "OMS — Physical activity",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Movimiento #Bienestar",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "Descubre cómo el movimiento abre puertas invisibles.",
+      "created": "2026-10-19T01:08:21.863933+00:00"
+    }
+  },
+  "updated": "2026-10-19T01:08:21.863943+00:00"
 }
