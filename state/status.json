@@ -240,11 +240,13 @@
       "hook": "¿Sabes cuánta fibra realmente ingieres?",
       "created": "2026-10-19T15:01:02.867017+00:00",
       "reel": {
-        "status": "publishing",
+        "status": "published",
         "container_id": "17895558330438262",
-        "updated": "2026-10-19T15:02:58.660685+00:00"
+        "updated": "2026-10-19T15:03:06.408988+00:00",
+        "media_id": "17891362389457088",
+        "error": ""
       }
     }
   },
-  "updated": "2026-10-19T15:02:58.660704+00:00"
+  "updated": "2026-10-19T15:03:06.409015+00:00"
 }
