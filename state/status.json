@@ -21,8 +21,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "Descubre cómo el movimiento abre puertas invisibles.",
-      "created": "2026-10-19T01:08:21.863933+00:00"
+      "created": "2026-10-19T01:08:21.863933+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895406527438262",
+        "updated": "2026-10-19T01:08:44.753011+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T01:08:41.305510+00:00"
+  "updated": "2026-10-19T01:08:44.753020+00:00"
 }
