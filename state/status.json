@@ -78,7 +78,28 @@
         "media_id": "18097581494393899",
         "error": ""
       }
+    },
+    "azucar-f413959d6335de8a82": {
+      "topic_id": "azucar",
+      "topic": {
+        "id": "azucar",
+        "title": "¿Cuánta azúcar es demasiada?",
+        "number": "10 %",
+        "unit": "de la energía diaria",
+        "hook": "Descubre el dulce secreto que tu cuerpo oculta.",
+        "fact": "La OMS recomienda reducir los azúcares libres a menos del 10 % de las calorías diarias.",
+        "comparison": "En una dieta de 2.000 kcal, ese 10 % equivale a menos de 50 g al día.",
+        "nuance": "Es una referencia para azúcares libres, no para toda la fruta entera. La OMS sugiere menos del 5 % para más beneficios.",
+        "action": "Compara los gramos de azúcar de tu bebida con su etiqueta. Prueba reemplazar una por agua.",
+        "source": "OMS — Healthy diet",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Azucar #Alimentacion #Bienestar",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "Descubre el dulce secreto que tu cuerpo oculta.",
+      "created": "2026-10-19T01:29:32.400477+00:00"
     }
   },
-  "updated": "2026-10-19T01:17:14.481758+00:00"
+  "updated": "2026-10-19T01:29:32.400496+00:00"
 }
