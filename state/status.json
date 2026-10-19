@@ -65,11 +65,13 @@
       "hook": "¿Qué fuerza secreta impulsa tu cuerpo al límite?",
       "created": "2026-10-19T01:15:55.673507+00:00",
       "reel": {
-        "status": "publishing",
+        "status": "published",
         "container_id": "17895407937438262",
-        "updated": "2026-10-19T01:16:39.620930+00:00"
+        "updated": "2026-10-19T01:16:45.736127+00:00",
+        "media_id": "18107843879577471",
+        "error": ""
       }
     }
   },
-  "updated": "2026-10-19T01:16:39.620947+00:00"
+  "updated": "2026-10-19T01:16:45.736143+00:00"
 }
