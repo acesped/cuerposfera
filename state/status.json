@@ -288,7 +288,28 @@
         "media_id": "18642942163051731",
         "error": ""
       }
+    },
+    "grasas_totales-f67f03b97de9679747": {
+      "topic_id": "grasas_totales",
+      "topic": {
+        "id": "grasas_totales",
+        "title": "¿Cuánta grasa hay en tu día?",
+        "number": "30 %",
+        "unit": "referencia energética",
+        "hook": "Descubre el secreto de tu grasa diaria",
+        "fact": "La OMS señala que limitar la grasa total al 30 % o menos de la energía puede ayudar a evitar peso excesivo en adultos.",
+        "comparison": "En un ejemplo de 2.000 kcal, son unas 67 g de grasa.",
+        "nuance": "La calidad de las grasas importa y las necesidades individuales pueden diferir.",
+        "action": "Da prioridad a alimentos con grasas insaturadas.",
+        "source": "OMS — Healthy diet",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Grasas #Nutrición",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "Descubre el secreto de tu grasa diaria",
+      "created": "2026-10-19T23:01:02.260641+00:00"
     }
   },
-  "updated": "2026-10-19T19:02:39.356694+00:00"
+  "updated": "2026-10-19T23:01:02.260663+00:00"
 }
