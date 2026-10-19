@@ -310,11 +310,13 @@
       "hook": "Descubre el secreto de tu grasa diaria",
       "created": "2026-10-19T23:01:02.260641+00:00",
       "reel": {
-        "status": "publishing",
+        "status": "published",
         "container_id": "17895647469438262",
-        "updated": "2026-10-19T23:01:56.129598+00:00"
+        "updated": "2026-10-19T23:02:02.939705+00:00",
+        "media_id": "18028728800914564",
+        "error": ""
       }
     }
   },
-  "updated": "2026-10-19T23:01:56.129614+00:00"
+  "updated": "2026-10-19T23:02:02.939722+00:00"
 }
