@@ -308,8 +308,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "Descubre el secreto de tu grasa diaria",
-      "created": "2026-10-19T23:01:02.260641+00:00"
+      "created": "2026-10-19T23:01:02.260641+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895647469438262",
+        "updated": "2026-10-19T23:01:34.368313+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T23:01:30.105116+00:00"
+  "updated": "2026-10-19T23:01:34.368331+00:00"
 }
