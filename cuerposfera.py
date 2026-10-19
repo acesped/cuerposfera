@@ -10,6 +10,10 @@ Repositorio PUBLICO para servir archivos a Meta desde rama de estado.
 """
 from __future__ import annotations
 import argparse
+import asyncio
+import io
+import random
+import unicodedata
 import base64
 import hashlib
 import io
@@ -35,7 +39,8 @@ UTC = timezone.utc
 BRAND = 'CUERPÓSFERA'
 SECRET_NAMES = SECRETS = (
     'X_API_KEY', 'X_API_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_TOKEN_SECRET',
-    'GITHUB_TOKEN', 'IG_ACCESS_TOKEN', 'INSTAGRAM_TOKEN',
+    'GITHUB_TOKEN', 'GH_TOKEN', 'IG_ACCESS_TOKEN', 'INSTAGRAM_TOKEN',
+    'GROQ_API_KEY', 'GEMINI_API_KEY', 'OPENROUTER_API_KEY',
 )
 S = requests.Session()
 S.headers.update({'User-Agent': 'Cuerposfera-science-publication/1.0'})
@@ -162,7 +167,7 @@ class Config:
         if not re.fullmatch(r'v\d+\.\d+',version):raise ValueError('IG_GRAPH_VERSION inválida')
         return cls(
             repo=os.getenv('GITHUB_REPOSITORY','').strip(),
-            token=os.getenv('GITHUB_TOKEN','').strip(),
+            token=(os.getenv('GH_TOKEN') or os.getenv('GITHUB_TOKEN') or '').strip(),
             branch=os.getenv('STATE_BRANCH','cuerposfera-state').strip(),
             uid=(os.getenv('IG_USER_ID') or os.getenv('INSTAGRAM_USER_ID') or '').strip(),
             ig_token=(os.getenv('IG_ACCESS_TOKEN') or os.getenv('INSTAGRAM_TOKEN') or '').strip(),
@@ -227,8 +232,81 @@ def centered(draw,text,y,fnt,fill,limit=640,spacing=14):
     return y
 
 
-def slide(text,subtitle,label,idx,folder,number=None):
-    im=gradient();d=ImageDraw.Draw(im)
+IMAGE_HEADERS={'User-Agent':'CuerposferaEducationalBot/1.0 (educational content; github.com)', 'Accept':'application/json'}
+
+def _photo_query(t):
+    tid=t['id']
+    if any(x in tid for x in ('azucar','gaseosa','bebida')):return 'soft drinks sugar food'
+    if any(x in tid for x in ('sal','sodio')):return 'salt food nutrition'
+    if any(x in tid for x in ('sueno','descanso')):return 'sleep bedroom person'
+    if any(x in tid for x in ('actividad','movimiento','ejercicio')):return 'walking exercise person'
+    return 'healthy foods vegetables water wellness'
+
+def _commons_photos(query):
+    url='https://commons.wikimedia.org/w/api.php'
+    r=requests.get(url,headers=IMAGE_HEADERS,params={'action':'query','format':'json','generator':'search',
+          'gsrsearch':'filetype:bitmap '+query,'gsrnamespace':6,'gsrlimit':12,'prop':'imageinfo',
+          'iiprop':'url|extmetadata','iiurlwidth':850},timeout=25)
+    r.raise_for_status()
+    for page in r.json().get('query',{}).get('pages',{}).values():
+        info=(page.get('imageinfo') or [{}])[0];meta=info.get('extmetadata',{})
+        license=str((meta.get('LicenseShortName') or {}).get('value','')).lower().replace(' ','')
+        if not ('cc0' in license or license.startswith('pd-') or license in ('pdm','publicdomain','pd')):continue
+        uri=info.get('thumburl') or info.get('url')
+        if uri:yield uri,{'title':page.get('title'),'license':license,'source':info.get('descriptionurl')}
+
+def _openverse_photos(query):
+    r=requests.get('https://api.openverse.org/v1/images/',headers=IMAGE_HEADERS,
+       params={'q':query,'license':'cc0,pdm','page_size':12},timeout=25)
+    r.raise_for_status()
+    for row in r.json().get('results',[]):
+        if str(row.get('license','')).lower() in ('cc0','pdm'):
+            uri=row.get('url') or row.get('thumbnail')
+            if uri:yield uri,{'title':row.get('title'),'license':row.get('license'),'source':row.get('foreign_landing_url')}
+
+def prepare_photos(t,folder):
+    """CC0/PD exclusivamente; si fallan, fondos animados locales."""
+    from urllib.parse import urlparse
+    import socket,ipaddress
+    files=[];credits=[]
+    for provider in (_commons_photos,_openverse_photos):
+        try:
+            for uri,meta in provider(_photo_query(t)):
+                if len(files)>=5:break
+                u=urlparse(uri)
+                if u.scheme!='https' or not u.hostname:continue
+                # Descargas de proveedores: no permitir host privado, ni redirects arbitrarios.
+                try:
+                    addresses=socket.getaddrinfo(u.hostname,443,type=socket.SOCK_STREAM)
+                    if not addresses or any(not ipaddress.ip_address(x[4][0]).is_global for x in addresses):continue
+                except (socket.gaierror,ValueError):continue
+                try:
+                    with requests.get(uri,timeout=25,stream=True,allow_redirects=False) as r:
+                        if r.status_code!=200 or not r.headers.get('Content-Type','').lower().startswith('image/'):continue
+                        body=bytearray()
+                        for chunk in r.iter_content(65536):
+                            body.extend(chunk)
+                            if len(body)>8_000_000:break
+                    if len(body)>8_000_000:continue
+                    from PIL import ImageOps
+                    with Image.open(io.BytesIO(body)) as raw:
+                        if min(raw.size)<420:continue
+                        dst=folder/f'photo_{len(files)}.jpg'
+                        ImageOps.fit(raw.convert('RGB'),(720,1280)).save(dst,quality=84)
+                        files.append(dst);credits.append(meta)
+                except (requests.RequestException,OSError,ValueError):continue
+            if len(files)>=5:break
+        except (requests.RequestException,KeyError,ValueError) as exc:
+            log('Fotos:',provider.__name__,'no disponible:',type(exc).__name__)
+    write_json(folder/'creditos_imagenes.json',credits)
+    return files
+
+def slide(text,subtitle,label,idx,folder,number=None,photo=None):
+    if photo:
+        from PIL import ImageEnhance
+        im=ImageEnhance.Brightness(Image.open(photo).convert('RGB')).enhance(.28)
+    else:im=gradient()
+    d=ImageDraw.Draw(im)
     d.rounded_rectangle((42,54,678,118),radius=25,fill=(15,68,80),outline=(54,155,157),width=2)
     centered(d,'CUERPÓSFERA',68,font(30,True),(199,250,240))
     d.ellipse((240,170,480,410),fill=(18,62,80),outline=(47,177,170),width=5)
@@ -280,20 +358,27 @@ def music(folder):
 
 
 def narration(text,folder):
-    out=folder/'voice.wav'
-    # Narración offline, sin APIs de terceros ni claves adicionales.
-    if shutil.which('espeak-ng'):
-        cmd(['espeak-ng','-v','es','-s','148','-a','155','-w',str(out),text],50)
+    out=folder/'voice.mp3'
+    async def speak():
+        import edge_tts
+        await edge_tts.Communicate(text,voice=os.getenv('CUERPO_VOICE','es-ES-AlvaroNeural'),rate='+25%').save(str(out))
+    try:
+        asyncio.run(speak())
+        if out.stat().st_size<1000:raise RuntimeError('Audio TTS vacío')
         return out
-    log('espeak-ng no instalado: video tendrá textos y música, sin narración')
-    return None
+    except Exception as exc:
+        if envbool('REQUIRE_VOICE',False):raise RuntimeError('Voz necesaria: '+type(exc).__name__) from None
+        log('TTS no disponible; usar texto y música:',type(exc).__name__)
+        return None
 
 
 def create_video(t,folder):
     folder.mkdir(parents=True,exist_ok=True)
     lines=script_lines(t)
+    photos=prepare_photos(t,folder) if envbool('ENABLE_PHOTOS',True) else []
     for idx,(a,b) in enumerate(lines):
-        slide(a,b,t['unit'],idx,folder,number=t['number'] if idx==1 else None)
+        slide(a,b,t['unit'],idx,folder,number=t['number'] if idx==1 else None,
+              photo=photos[idx%len(photos)] if photos else None)
     cover=Image.open(folder/'slide_01.png').convert('RGB')
     cover.save(folder/'feed.jpg',quality=90,optimize=True)
     # Cinco escenas de 6 segundos = 30s, vertical 720x1280, 30 fps.
@@ -316,7 +401,7 @@ def create_video(t,folder):
         idx=1 if not voice else 2
         filters.append(f'[{idx}:a]volume=0.13,aresample=48000[m]')
     if voice:filters.append(inputs[0])
-    if voice and track:filters.append('[m][v]amix=inputs=2:duration=first:dropout_transition=0[a]')
+    if voice and track:filters.append('[m][v]amix=inputs=2:duration=longest:dropout_transition=0[a]')
     elif track:filters.append('[m]anull[a]')
     elif voice:filters.append('[v]anull[a]')
     else:
@@ -333,11 +418,8 @@ def create_video(t,folder):
         types['video'].get('width')!=720 or types['video'].get('height')!=1280):
         raise RuntimeError('Video incompatible con Instagram')
     if final.stat().st_size>45_000_000:raise RuntimeError('MP4 supera 45 MB')
-    story=folder/'story.jpg'
-    # Story vertical estática independiente del feed y del Reel.
-    slide(t['hook'],t['action'],'CUERPÓSFERA',5,folder,number=t['number'])
-    Image.open(folder/'slide_05.png').convert('RGB').save(story,quality=90,optimize=True)
-    return final,folder/'feed.jpg',story
+    # Reutilizar el video vertical como Story, manteniendo ID de publicación propio.
+    return final,folder/'feed.jpg',final
 
 
 def caption(t):
@@ -460,7 +542,7 @@ class Instagram:
     def create(self,url,caption_text,kind):
         params={'caption':caption_text}
         if kind=='reel':params.update(media_type='REELS',video_url=url,share_to_feed='false')
-        elif kind=='story':params={'media_type':'STORIES','image_url':url}
+        elif kind=='story':params={'media_type':'STORIES','video_url':url}
         elif kind=='feed':params['image_url']=url
         else:raise ValueError('Tipo de publicación no admitido: '+str(kind))
         b=self.req('POST','/'+self.c.uid+'/media',data=params)
@@ -507,9 +589,147 @@ def publish_piece(gh,ig,state,sha,episode,kind,url,text):
     return sha
 
 
+
+# Igual que AERO_DATOS: descubrimiento de modelos y fallback Groq/Gemini/OpenRouter.
+GROQ_URL='https://api.groq.com/openai/v1/chat/completions'
+GEMINI_MODELS='https://generativelanguage.googleapis.com/v1beta/models'
+OPENROUTER_URL='https://openrouter.ai/api/v1/chat/completions'
+
+ANGLES=(
+ '¿Cómo se interpreta este número?', '¿Qué diferencia hay entre recomendación y límite?',
+ '¿Por qué importa repetir este hábito?', '¿Qué nos dice la etiqueta?',
+ '¿Qué error se repite al interpretar este dato?', '¿Qué puedes cambiar esta semana?',
+ '¿Qué significa esta cifra en la vida diaria?', '¿Cómo comparar dos alternativas?',
+ '¿Qué detalle suele pasar inadvertido?', '¿Qué cambia según las necesidades individuales?',
+ '¿Qué es mito y qué es dato?', '¿Qué significa la recomendación en términos prácticos?',
+ '¿Cuál es una acción pequeña y útil?', '¿Qué deberías preguntar antes de consumir?',
+ '¿Qué representa este porcentaje?', '¿Cómo evitar conclusiones exageradas?',
+ '¿Qué es mejor observar durante una semana?', '¿Qué comparación ayuda a entenderlo?',
+ '¿Qué pregunta conviene hacer en el supermercado?', '¿Qué ejemplo se puede calcular?',
+ '¿Por qué una sola ocasión no define tu salud?', '¿Qué dato conviene compartir?',
+ '¿Cómo se aplica a la rutina cotidiana?', '¿Qué matiz científico no debemos olvidar?',
+ '¿Qué decisión sencilla puedes tomar hoy?',
+)
+
+def catalog():
+    """500 propuestas (20 fichas * 25 enfoques). No son 500 hechos diferentes."""
+    if len(TOPICS)!=20:raise RuntimeError('Se esperaban 20 fichas científicas')
+    return [dict(id=f'CS-{i*25+j+1:03d}',category=t['title'],
+                 title=f'{q} — {t["title"]}',topic_id=t['id'],
+                 image_query=t['title'],lesson=t['fact'],source=t['source_url'],
+                 angle=q) for i,t in enumerate(TOPICS) for j,q in enumerate(ANGLES)]
+
+def _model_list(provider,key):
+    if provider=='groq':
+        r=requests.get('https://api.groq.com/openai/v1/models',headers={'Authorization':'Bearer '+key},timeout=25)
+        r.raise_for_status();names={x['id'] for x in r.json().get('data',[]) if isinstance(x,dict) and 'id' in x}
+        preferred=['llama-3.3-70b-versatile','llama-3.1-8b-instant','openai/gpt-oss-20b']
+        configured=os.getenv('GROQ_MODEL','')
+        return ([configured] if configured and configured in names else [])+[m for m in preferred if m in names and m!=configured]
+    if provider=='gemini':
+        r=requests.get(GEMINI_MODELS,headers={'x-goog-api-key':key},params={'pageSize':100},timeout=25)
+        r.raise_for_status();names={x.get('name','').removeprefix('models/') for x in r.json().get('models',[]) if 'generateContent' in x.get('supportedGenerationMethods',[])}
+        configured=os.getenv('GEMINI_MODEL','').removeprefix('models/')
+        preferred=['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.0-flash']
+        return ([configured] if configured and configured in names else [])+[m for m in preferred if m in names and m!=configured]
+    r=requests.get('https://openrouter.ai/api/v1/models',headers={'Authorization':'Bearer '+key},timeout=25)
+    r.raise_for_status();options=[]
+    for x in r.json().get('data',[]):
+        name=x.get('id','');price=x.get('pricing') or {}
+        try:free=float(price.get('prompt',1))==0 and float(price.get('completion',1))==0
+        except (ValueError,TypeError):free=False
+        if name.endswith(':free') and free and int(x.get('context_length') or 0)>=4000:
+            options.append(name)
+    chosen=os.getenv('OPENROUTER_MODEL','openrouter/free')
+    if chosen!='openrouter/free' and not chosen.endswith(':free'):raise ValueError('OpenRouter solo modelos :free')
+    return ([chosen] if chosen in options else [])+[m for m in options if m!=chosen][:4]
+
+def _ai_candidates():
+    candidates=[]
+    for provider,name in [('groq','GROQ_API_KEY'),('gemini','GEMINI_API_KEY'),('openrouter','OPENROUTER_API_KEY')]:
+        key=os.getenv(name,'').strip()
+        if not key:continue
+        try:
+            candidates.extend((provider,model,key) for model in _model_list(provider,key)[:4])
+        except (requests.RequestException,ValueError,KeyError) as exc:
+            log('Modelo no disponible:',provider,type(exc).__name__)
+    if not candidates:raise RuntimeError('Configura GROQ_API_KEY, GEMINI_API_KEY u OPENROUTER_API_KEY y comprueba la cuota/modelos')
+    return candidates
+
+def _provider_text(provider,model,key,prompt):
+    if provider=='gemini':
+        r=requests.post(f'{GEMINI_MODELS}/{model}:generateContent',headers={'x-goog-api-key':key},
+          json={'contents':[{'parts':[{'text':prompt}]}],'generationConfig':{'maxOutputTokens':550,'temperature':0.45}},timeout=95)
+        r.raise_for_status()
+        return '\n'.join(part.get('text','') for c in r.json().get('candidates',[])
+                         for part in c.get('content',{}).get('parts',[]) if isinstance(part,dict))
+    url=GROQ_URL if provider=='groq' else OPENROUTER_URL
+    headers={'Authorization':'Bearer '+key}
+    if provider=='openrouter':headers.update({'HTTP-Referer':'https://github.com','X-Title':'Cuerposfera'})
+    r=requests.post(url,headers=headers,json={'model':model,'messages':[
+      {'role':'system','content':'Eres redactor de divulgación científica. Solo el formato pedido, en español.'},
+      {'role':'user','content':prompt}], 'temperature':0.4,'max_tokens':650},timeout=95)
+    r.raise_for_status();answer=r.json().get('choices',[{}])[0].get('message',{}).get('content','')
+    if isinstance(answer,list):answer=''.join(x.get('text','') for x in answer if isinstance(x,dict))
+    return str(answer)
+
+def _normalize(s):
+    return ''.join(c for c in unicodedata.normalize('NFKD',s.casefold()) if not unicodedata.combining(c)).strip()
+
+def _candidate_hook(raw):
+    raw=raw.strip()
+    try:
+        data=json.loads(raw.strip('`').removeprefix('json').strip());v=data.get('hook','')
+    except (json.JSONDecodeError,AttributeError):
+        hit=re.search(r'^\s*(?:GANCHO|HOOK)\s*:\s*(.*?)\s*$',raw,re.I|re.M)
+        v=hit.group(1) if hit else raw.splitlines()[0] if raw else ''
+    v=re.sub(r'\s+',' ',str(v)).strip(' "“”')
+    if not 12<=len(v)<=65 or re.search(r'\d',v):raise ValueError('Gancho inválido o contiene número no aprobado')
+    if any(k in _normalize(v) for k in ('cura','garantiz','muerte segura','veneno','toxina mortal')):raise ValueError('Gancho alarmista')
+    return v
+
+def creative_episode(fact,state,angle=''):
+    used={_normalize(x.get('hook','')) for x in state.get('episodes',{}).values() if x.get('topic_id')==fact['id']}
+    prompt=(f'MARCA: CUERPÓSFERA. Tema: {fact["title"]}. Enfoque: {angle}. '
+      f'Dato científico aprobado, NO modificar: {fact["fact"]} '
+      f'Contexto aprobado: {fact["nuance"]}. '
+      'Genera SOLO una frase GANCHO: de 12 a 65 caracteres, intrigante, sin números, '
+      'sin otras afirmaciones científicas, sin diagnósticos ni alarmismo. '
+      'No repitas frases previas: '+repr(list(used)[-30:])+'. Responde GANCHO: ...')
+    last=''
+    for provider,model,key in _ai_candidates():
+        try:
+            hook=_candidate_hook(_provider_text(provider,model,key,prompt))
+            if _normalize(hook) in used:raise ValueError('Gancho duplicado')
+            result=dict(fact);result['hook']=hook;result['ai_model']=provider+':'+model
+            return result
+        except (requests.RequestException,ValueError,KeyError,IndexError,TypeError) as exc:
+            last=f'{provider}/{model}: {type(exc).__name__}';log('IA no usable:',last)
+    raise RuntimeError('No se obtuvo gancho válido; NO publicar. '+last)
+
+def pick_fact(state):
+    """Rotate the least-covered scientific topic, not the same fixed episode."""
+    counts={t['id']:0 for t in TOPICS}
+    for entry in state['episodes'].values():
+        if entry.get('topic_id') in counts:counts[entry['topic_id']]+=1
+    return min(TOPICS,key=lambda t:(counts[t['id']],t['id']))
+
+
+def next_episode(fact,state):
+    variant=creative_episode(fact,state)
+    # Collision-resistant ID; uniqueness retained across the permanent state.
+    ident=hashlib.sha256((fact['id']+'|'+variant['hook'].casefold()).encode()).hexdigest()[:18]
+    eid=fact['id']+'-'+ident
+    if eid in state['episodes']:raise RuntimeError('Guion duplicado detectado; no publicar')
+    return eid,variant
+
+
 def execute(args):
     c=Config.load();c.output.mkdir(parents=True,exist_ok=True)
     for t in TOPICS:check_topic(t)
+    if args.list:
+        for e in catalog():print(e['id'],e['title'])
+        return
     if args.list_topics:
         for t in TOPICS:print(t['id'],':',t['title'],'[',t['number'],']')
         return
@@ -519,34 +739,46 @@ def execute(args):
         print('Fichas verificadas:',len(TOPICS));print('Instagram configurado:',bool(c.uid and c.ig_token))
         return
     publish=args.publish
+    if args.check_instagram:
+        Instagram(c).identity();log('Instagram verificado');return
     if publish:
         gh=GitHub(c);gh.ensure()
         state,sha=gh.state()
         ig=Instagram(c);ig.identity()
         if state['account'] not in (None,c.uid):raise RuntimeError('Estado vinculado a otra cuenta Instagram')
         if state['account'] is None:state['account']=c.uid;sha=gh.save(state,sha)
-        # Rotación: elegir la primera ficha que todavía no ha publicado ambos elementos.
-        def unfinished(topic):
-            item=state['episodes'].get(topic['id'],{})
-            kinds=['reel']+(['feed'] if c.public_feed else [])+(['story'] if c.public_story else [])
-            statuses=[item.get(k,{}).get('status','pending') for k in kinds]
-            # No volver a seleccionar episodios bloqueados solo por resultados inciertos.
-            # Se conservan para reconciliación manual, mientras la cola continúa.
-            return any(st in ('pending','container') for st in statuses)
-        pending=[t for t in TOPICS if unfinished(t)]
-        if not pending:
-            log('No quedan fichas editoriales nuevas; agrega fichas verificadas a TOPICS.');return
-        topic=pending[0]
+        # First resume any incomplete episode before creating new content.
+        # An uncertain post is never resent, even across workflow executions.
+        kinds=['reel']+(['feed'] if c.public_feed else [])+(['story'] if c.public_story else [])
+        active=[]
+        for key,entry in state['episodes'].items():
+            statuses=[entry.get(k,{}).get('status','pending') for k in kinds]
+            if any(v in ('pending','container') for v in statuses):
+                if 'topic' in entry:
+                    active.append((key,entry['topic']))
+                else:
+                    old=next((t for t in TOPICS if t['id']==entry.get('topic_id')),None)
+                    if old is None:raise RuntimeError('Estado anterior sin ficha recuperable: '+key)
+                    entry['topic']=old
+                    sha=gh.save(state,sha)
+                    active.append((key,old))
+        if active:
+            episode,topic=active[0]
+        else:
+            fact=pick_fact(state)
+            episode,topic=next_episode(fact,state)
+            state['episodes'][episode]={'topic_id':fact['id'],'topic':topic,'hook':topic['hook'],
+                                        'created':now()}
+            sha=gh.save(state,sha)  # reserve episode BEFORE rendering/publication
     else:
         topic=next((t for t in TOPICS if t['id']==args.topic), TOPICS[0])
         gh=ig=state=sha=None
-    out=c.output/topic['id'];video,photo,story=create_video(topic,out)
+    out=c.output/(episode if publish else topic['id']);video,photo,story=create_video(topic,out)
     write_json(out/'episode.json',{'topic':topic,'caption':caption(topic),'music_source':MUSIC_PAGE,'generated_at':now()})
     log('Archivos listos:',video,photo)
     if not publish:
         log('SIMULACIÓN: no se ha publicado nada');return
-    episode=topic['id']
-    entry=state['episodes'].setdefault(episode,{'topic_id':episode})
+    entry=state['episodes'][episode]
     sha=gh.save(state,sha)
     text=caption(topic)
     # Si una pieza está incierta, no bloquea la otra; tampoco se vuelve a enviar la incierta.
@@ -566,6 +798,8 @@ def main():
     m.add_argument('--dry-run',action='store_true',help='Renderizar sin publicar (predeterminado)')
     m.add_argument('--check',action='store_true',help='Verificar dependencias y catálogo')
     m.add_argument('--list-topics',action='store_true')
+    m.add_argument('--list',action='store_true')
+    m.add_argument('--check-instagram',action='store_true')
     parser.add_argument('--topic',default='azucar',help='ID del tema para --dry-run')
     args=parser.parse_args()
     try:execute(args);return 0
