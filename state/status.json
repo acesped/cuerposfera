@@ -275,11 +275,13 @@
       "hook": "Descubre el secreto de la grasa que no debes temer.",
       "created": "2026-10-19T19:01:03.575606+00:00",
       "reel": {
-        "status": "publishing",
+        "status": "published",
         "container_id": "17895614064438262",
-        "updated": "2026-10-19T19:01:54.820357+00:00"
+        "updated": "2026-10-19T19:02:03.554464+00:00",
+        "media_id": "18233765956322863",
+        "error": ""
       }
     }
   },
-  "updated": "2026-10-19T19:01:54.820375+00:00"
+  "updated": "2026-10-19T19:02:03.554482+00:00"
 }
