@@ -148,7 +148,28 @@
         "media_id": "18110127290236037",
         "error": ""
       }
+    },
+    "azucar_optima-34b11092684b3fd99b": {
+      "topic_id": "azucar_optima",
+      "topic": {
+        "id": "azucar_optima",
+        "title": "El objetivo más exigente para el azúcar",
+        "number": "5 %",
+        "unit": "de energía diaria",
+        "hook": "Descubre el reto que desafía al azúcar",
+        "fact": "La OMS sugiere reducir los azúcares libres al 5 % o menos de la energía para beneficios adicionales.",
+        "comparison": "En una dieta de 2.000 kcal, equivale a unos 25 g de azúcares libres al día.",
+        "nuance": "Se refiere a azúcares libres, no al azúcar presente naturalmente en fruta entera.",
+        "action": "Prueba bebidas sin azúcar añadido y lee etiquetas.",
+        "source": "OMS — Healthy diet",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Azucar #Etiquetas",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "Descubre el reto que desafía al azúcar",
+      "created": "2026-10-19T07:00:52.108666+00:00"
     }
   },
-  "updated": "2026-10-19T03:03:13.864543+00:00"
+  "updated": "2026-10-19T07:00:52.108688+00:00"
 }
