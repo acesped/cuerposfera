@@ -133,8 +133,13 @@
         "ai_model": "groq:openai/gpt-oss-20b"
       },
       "hook": "¿Sabes cuánto azúcar escondes?",
-      "created": "2026-10-19T03:00:58.273166+00:00"
+      "created": "2026-10-19T03:00:58.273166+00:00",
+      "reel": {
+        "status": "container",
+        "container_id": "17895424818438262",
+        "updated": "2026-10-19T03:01:20.168345+00:00"
+      }
     }
   },
-  "updated": "2026-10-19T03:01:16.959329+00:00"
+  "updated": "2026-10-19T03:01:20.168362+00:00"
 }
