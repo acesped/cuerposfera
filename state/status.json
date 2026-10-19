@@ -205,11 +205,13 @@
       "hook": "Descubre por qué los carbohidratos no son todos iguales.",
       "created": "2026-10-19T11:00:55.139517+00:00",
       "reel": {
-        "status": "publishing",
+        "status": "published",
         "container_id": "17895510738438262",
-        "updated": "2026-10-19T11:02:45.893165+00:00"
+        "updated": "2026-10-19T11:02:53.156178+00:00",
+        "media_id": "18339470161277816",
+        "error": ""
       }
     }
   },
-  "updated": "2026-10-19T11:02:45.893183+00:00"
+  "updated": "2026-10-19T11:02:53.156194+00:00"
 }
