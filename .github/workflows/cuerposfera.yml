@@ -8,10 +8,6 @@ on:
         default: dry-run
         type: choice
         options: [dry-run, publish]
-  schedule:
-    # ÚNICO cron: GitHub Actions controla cuándo ejecutar.
-    # Cambia esta expresión o elimina schedule si utilizas cron-job.org para disparar workflow_dispatch.
-    - cron: '0 15 * * 1,3,5'
 permissions:
   contents: write
 concurrency:
@@ -31,6 +27,8 @@ jobs:
       INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
       IG_EXPECTED_USERNAME: cuerposfera
       IG_GRAPH_VERSION: v25.0
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: gpt-4.1-mini
       STATE_BRANCH: cuerposfera-state
       OUTPUT_DIR: output
       ENABLE_MUSIC: 'true'
@@ -54,7 +52,7 @@ jobs:
       - name: Run CUERPOSFERA
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.mode }}" == "publish" ]]; then
+          if [[ "${{ inputs.mode }}" == "publish" ]]; then
             python monitor.py --publish
           else
             python monitor.py --dry-run
