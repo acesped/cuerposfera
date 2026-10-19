@@ -253,7 +253,28 @@
         "media_id": "18110104307222569",
         "error": ""
       }
+    },
+    "grasas_saturadas-dfdfde2275e569c218": {
+      "topic_id": "grasas_saturadas",
+      "topic": {
+        "id": "grasas_saturadas",
+        "title": "¿Cuánta grasa saturada?",
+        "number": "10 %",
+        "unit": "máximo de energía",
+        "hook": "Descubre el secreto de la grasa que no debes temer.",
+        "fact": "La OMS recomienda que las grasas saturadas no superen el 10 % de las calorías totales.",
+        "comparison": "A 2.000 kcal, el 10 % equivale a unas 22 g de grasa saturada.",
+        "nuance": "La cifra no significa eliminar toda la grasa; importa el tipo y el conjunto de la dieta.",
+        "action": "Sustituye parte de la mantequilla por aceite vegetal insaturado.",
+        "source": "OMS — Healthy diet",
+        "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+        "date_reviewed": "2026-10-18",
+        "tags": "#Grasas #Corazón",
+        "ai_model": "groq:openai/gpt-oss-20b"
+      },
+      "hook": "Descubre el secreto de la grasa que no debes temer.",
+      "created": "2026-10-19T19:01:03.575606+00:00"
     }
   },
-  "updated": "2026-10-19T15:03:35.519468+00:00"
+  "updated": "2026-10-19T19:01:03.575629+00:00"
 }
